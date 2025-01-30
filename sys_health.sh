@@ -15,7 +15,11 @@ df -h
 
 free -h
 
-# To check the CPU usage
+# To check the no of CPU
+
+nproc
+
+# To check the Processes
 
 ps -ef
 
