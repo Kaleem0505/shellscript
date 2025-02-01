@@ -1,8 +1,6 @@
 #!/bin/bash
-##################################################
 # This script will list all the resources in the AWS account
 # Author: Kalemudeen
-#
 # Supported AWS services by the script
 # 1. EC2
 # 2. S3
@@ -14,71 +12,80 @@
 # 8. IAM
 # 9. CloudWatch
 # 10. CloudFormation
-#
-# Usage: ./aws_resources.sh
-# Example: ./aws_resources.sh us-east-1 EC2
+# Usage: ./aws_resource_list.sh
+# Example: ./aws_resource-list.sh us-east-1 EC2
 
 ##################################################
 
-# Check if the required arguments are passed
-
-if [ $# -lt 2 ]; then
-    echo "Usage: $0 <region> <service>"
-    echo "Example: $0 us-east-1 EC2"
+# Check if the required number of arguments are passed
+if [ $# -ne 2 ]; then
+    echo "Usage: ./aws_resource_list.sh  <aws_region> <aws_service>"
+    echo "Example: ./aws_resource_list.sh us-east-1 ec2"
     exit 1
 fi
 
-# Check if the AWS CLI is installed
+# Assign the arguments to variables and convert the service to lowercase
+aws_region=$1
+aws_service=$2
 
+# Check if the AWS CLI is installed
 if ! command -v aws &> /dev/null; then
-    echo "AWS CLI is not installed. Please install it before running the script"
+    echo "AWS CLI is not installed. Please install the AWS CLI and try again."
     exit 1
 fi
 
 # Check if the AWS CLI is configured
-
 if [ ! -d ~/.aws ]; then
-    echo "AWS CLI is not configured.  Please configure it before running the script"
+    echo "AWS CLI is not configured. Please configure the AWS CLI and try again."
     exit 1
 fi
 
-# Execute the AWS CLI command based on the service
-
-case $2 in
-    EC2)
-        aws ec2 describe-instances --region $1
+# List the resources based on the service
+case $aws_service in
+    ec2)
+        echo "Listing EC2 Instances in $aws_region"
+        aws ec2 describe-instances --region $aws_region --query "Reservations[*].Instances[*].[InstanceId, State.Name]" --output text    
         ;;
-    S3)
-        aws s3api list-buckets --region $1
+    rds)
+        echo "Listing RDS Instances in $aws_region"
+        aws rds describe-db-instances --region $aws_region
         ;;
-    RDS)
-        aws rds describe-db-instances --region $1
+    s3)
+        echo "Listing S3 Buckets in $aws_region"
+        aws s3api list-buckets --region $aws_region
         ;;
-    DynamoDB)
-        aws dynamodb list-tables --region $1
+   
+    vpc)
+        echo "Listing VPCs in $aws_region"
+        aws ec2 describe-vpcs --region $aws_region
         ;;
-    Lambda)
-        aws lambda list-functions --region $1
+    iam)
+        echo "Listing IAM Users in $aws_region"
+        aws iam list-users --region $aws_region
         ;;
-    EBS)
-        aws ec2 describe-volumes --region $1
+    cloudwatch)
+        echo "Listing CloudWatch Alarms in $aws_region"
+        aws cloudwatch describe-alarms --region $aws_region
         ;;
-    VPC)
-        aws ec2 describe-vpcs --region $1
+    cloudformation)
+        echo "Listing CloudFormation Stacks in $aws_region"
+        aws cloudformation describe-stacks --region $aws_region
         ;;
-    IAM)
-        aws iam list-users --region $1
+    lambda)
+        echo "Listing Lambda Functions in $aws_region"
+        aws lambda list-functions --region $aws_region
         ;;
-    CloudWatch)
-        aws cloudwatch list-metrics --region $1
+    dynamodb)
+        echo "Listing DynamoDB Tables in $aws_region"
+        aws dynamodb list-tables --region $aws_region
         ;;
-    CloudFormation)
-        aws cloudformation list-stacks --region $1
+    ebs)
+        echo "Listing EBS Volumes in $aws_region"
+        aws ec2 describe-volumes --region $aws_region
         ;;
     *)
-        echo "Invalid service. Supported services are EC2, S3, RDS, DynamoDB, Lambda, EBS, VPC, IAM, CloudWatch, CloudFormation"
+        echo "Invalid service. Please enter a valid service."
+        exit 1
         ;;
-esac
-
 
 
