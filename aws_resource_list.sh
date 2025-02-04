@@ -87,5 +87,3 @@ case $aws_service in
         echo "Invalid service. Please enter a valid service."
         exit 1
         ;;
-
-
